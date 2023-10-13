@@ -1,6 +1,3 @@
-import os
-from dotenv import load_dotenv
-
 import pinecone
 from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -8,12 +5,11 @@ from langchain.embeddings.sentence_transformer import SentenceTransformerEmbeddi
 from langchain.vectorstores import Pinecone
 from langchain.chains.question_answering import load_qa_chain
 from langchain import HuggingFaceHub
+import utils
 
-load_dotenv()
 
-OPENAI_API_KEY = str(os.getenv('OPENAI_API_KEY'))
-HUGGINGFACEHUB_API_TOKEN = str(os.getenv('HUGGINGFACEHUB_API_TOKEN'))
-PINECONE_API_KEY = str(os.getenv('PINECONE_API_KEY'))
+HUGGINGFACEHUB_API_TOKEN = utils.HUGGINGFACEHUB_API_TOKEN
+PINECONE_API_KEY = utils.PINECONE_API_KEY
 
 # Load Documents
 def load_docs(directory="Docs/"):
@@ -22,8 +18,8 @@ def load_docs(directory="Docs/"):
     return documents
 
 # Transform(Split) Documents
-def split_docs(documents, chunk_size=1000, chunk_overlap=150):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap) # Break large documents in few chunks
+def split_docs(documents, chunk_size=2000, chunk_overlap=250):
+    text_splitter = RecursiveCharacterTextSplitter(separators=["\n", "\n\n","\n\n\n"], chunk_size=chunk_size, chunk_overlap=chunk_overlap) # Break large documents in few chunks
     docs = text_splitter.split_documents(documents=documents)
     return docs
 
@@ -53,11 +49,10 @@ print(f"Num docs separados:{len(docs)}")
 embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 
 query_result = embeddings.embed_query("Hello Buddy")
-# print(len(query_result))
+print(len(query_result))
 
-pinecone.init(api_key=PINECONE_API_KEY,environment="gcp-starter")
-index_name="inovai-site"
-index = Pinecone.from_documents(docs, embeddings, index_name=index_name)
+pinecone.init(api_key=utils.PINECONE_API_KEY,environment=utils.PINECONE_ENVIRONMENT)
+index = Pinecone.from_documents(docs, embeddings, index_name=utils.PINECONE_INDEX_NAME)
 
 llm = HuggingFaceHub(repo_id="bigscience/bloom",model_kwargs={"temperature":1e-10})
 chain = load_qa_chain(llm, chain_type="stuff")
