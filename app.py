@@ -53,16 +53,17 @@ print(f"Num docs separados:{len(docs)}")
 embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 
 query_result = embeddings.embed_query("Hello Buddy")
-# print(len(query_result))
+print(len(query_result))
 
 pinecone.init(api_key=PINECONE_API_KEY,environment="gcp-starter")
-index_name="inovai-site"
+index_name="inovai-chatbot"
 index = Pinecone.from_documents(docs, embeddings, index_name=index_name)
 
 llm = HuggingFaceHub(repo_id="bigscience/bloom",model_kwargs={"temperature":1e-10})
 chain = load_qa_chain(llm, chain_type="stuff")
 
 try:
+    pass
     while True:
         our_query = input("O que deseja saber:")
         if our_query.lower() == 'exit':
