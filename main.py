@@ -44,9 +44,29 @@ def get_vectorstore(text_chunks):
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import HumanMessagePromptTemplate
+from langchain.schema import SystemMessage
+from langchain.prompts import ChatPromptTemplate
 
 def get_conversation_chain(vectorstore):
+    chat_template = ChatPromptTemplate.from_messages(
+        [
+            SystemMessage(
+                content=(
+                    "Você é o chatbot da InovAI Soluções, teu nome é Ino e respondes somente a perguntas dos clientes acerca de tudo sobre a respeito InovAI"
+                )
+            ),
+            SystemMessage(
+                content=(
+                    "Sempre que fizerem alguma questão que não tem a ver com a InovAI deves responder: Só posso responder perguntas a respeito da InovAI"
+                )
+            ),
+        ]
+    )
+
     llm = ChatOpenAI()
+    llm(chat_template.format_messages())
     # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
 
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
