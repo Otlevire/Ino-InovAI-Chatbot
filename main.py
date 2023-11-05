@@ -11,6 +11,7 @@ from langchain.llms import HuggingFaceHub
 import os
 
 load_dotenv()
+
 Docs="Docs/"
 OPENAI_API_KEY=str(os.getenv('OPENAI_API_KEY'))
 chat_history = []
@@ -33,16 +34,17 @@ def get_text_chunks(text):
         chunk_overlap=200,
         length_function=len
     )
-    chunks = text_splitter.split_text(text)
-    return chunks
+    # return text_splitter.split_text(text)
+    return text_splitter.split_documents(text_splitter)
 
 
 
 def get_vectorstore(text_chunks):
     embeddings = OpenAIEmbeddings()
     # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
-    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
-    return vectorstore
+    # return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+    return FAISS.from_documents(text_chunks, embedding=embeddings)
+
 
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import HumanMessagePromptTemplate
